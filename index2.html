@@ -1,0 +1,931 @@
+<!DOCTYPE html>
+<html lang="id" class="dark"> <!-- Default ke dark mode -->
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hadi - Skyline Profile</title>
+
+    <!-- Preload critical resources -->
+    <link rel="preload" href="https://files.catbox.moe/buwb91.jpg" as="image">
+    <link rel="preload" href="https://files.catbox.moe/wipbbk.jpg" as="image">
+    <link rel="preload" href="https://fonts.googleapis.com/css2?family=Titillium+Web:wght@300;400;600;700&display=swap" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <link rel="preload" href="https://fonts.cdnfonts.com/css/kingvoon" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <link rel="preload" href="https://www.freefontdownload.org/fonts-file/melon-camp.ttf" as="font" type="font/ttf" crossorigin>
+    <link rel="preload" href="https://files.catbox.moe/6g1558.png" as="image"> <!-- Preload gambar pilot siang -->
+    <link rel="preload" href="https://gcdnb.pbrd.co/images/tPGrhp1E7S28.png?o=1" as="image"> <!-- Preload gambar astrobear malam -->
+    <link rel="preload" href="https://files.catbox.moe/57tcjc.png" as="image"> <!-- Preload astrobear alternate for toggle -->
+
+
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Anime.js CDN -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
+
+    <noscript><link href="https://fonts.googleapis.com/css2?family=Titillium+Web:wght@300;400;600;700&display=swap" rel="stylesheet"></noscript>
+    <noscript><link href="https://fonts.cdnfonts.com/css/kingvoon" rel="stylesheet"></noscript>
+    <link rel="stylesheet" href="https://public.codepenassets.com/css/normalize-5.0.0.min.css">
+
+
+    <style>
+        /* CSS from new style.css (Night & Day Toggle) */
+        *,
+        *:after,
+        *:before {
+        	box-sizing: border-box;
+        }
+        html {
+    overflow-x: hidden;
+    max-width: 100vw;
+}
+
+        :root {
+          --slide-ease: cubic-bezier(.4,-0.3,.6,1.3);
+        /*   --slide-ease: cubic-bezier(.8,-0.3,.2,1.3); */
+        	--easing: var(--slide-ease);
+        	--speed: 0.5s;
+        	--width: clamp(100px, 15vmin, 150px); /* Adjusted width for a smaller toggle */
+        	--ar: 8 / 3;
+        	--ray: hsl(0 0% 100% / 0.5);
+        	--sun: hsl(47, 91%, 58%);
+        	--moon: hsl(212, 13%, 82%);
+        	--crater: hsl(221, 16%, 68%);
+        	/* --bg is managed by your existing dark mode */
+        	--bear-speed: 7s; /* Kecepatan animasi "beruang/gambar" terbang, bisa disesuaikan */
+          /* --color is managed by your existing dark mode */
+        }
+
+        .toggle-container { /* Added a wrapper for positioning */
+            position: absolute;
+            top: 1.5rem; /* Corresponds to top-6 */
+            right: 1.5rem; /* Corresponds to right-6 */
+            z-index: 20;
+        }
+        @media (min-width: 640px) { /* sm breakpoint */
+            .toggle-container {
+                top: 2rem; /* Corresponds to sm:top-8 */
+                right: 2rem; /* Corresponds to sm:right-8 */
+            }
+        }
+
+
+        .toggle__backdrop:first-of-type .clouds path:first-of-type {
+        	fill: var(--ray);
+        }
+
+        .toggle {
+          -webkit-tap-highlight-color: transparent;
+        	width: var(--width);
+          z-index: 10;
+          will-change: transform;
+          isolation: isolate;
+          transform: translate3d(0, 0, 0);
+        	aspect-ratio: var(--ar);
+        	border-radius: 100vh;
+        	border: 0;
+        	position: relative;
+        	padding: 0;
+        	overflow: hidden;
+        	cursor: pointer;
+        	transition: background var(--speed) var(--easing);
+        	--sky: hsl(204, 53%, 47%);
+        	--night: hsl(229, 25%, 16%);
+        	outline-color: transparent;
+        	background: hsl(
+        		calc(204 + (var(--dark, 0) * 25))
+        		calc((53 - (var(--dark, 0) * 28)) * 1%)
+        		calc((47 - (var(--dark, 0) * 31)) * 1%)
+        	);
+        	box-shadow:
+        		calc(var(--width) * 0) calc(var(--width) * 0.02) calc(var(--width) * 0.01) calc(var(--width) * -0.0025) hsl(210 10% 100% / 0.95),
+        		calc(var(--width) * 0) calc(var(--width) * -0.02) calc(var(--width) * 0.01) calc(var(--width) * -0.0025) hsl(210 10% 10% / 0.2),
+        		calc(var(--width) * 0) calc(var(--width) * 0.02) calc(var(--width) * 0.5) 0 hsl(210 10% 100% / 0.15);
+        }
+        .toggle[aria-pressed=true] { --dark: 1; }
+        .toggle { --dark: 0; }
+
+
+        .toggle:after {
+        	content: "";
+        	position: absolute;
+        	inset: 0;
+        	box-shadow:
+        		calc(var(--width) * 0) calc(var(--width) * -0.025) calc(var(--width) * 0.025) 0 hsl(210 10% 10% / 0.15) inset,
+        		calc(var(--width) * 0) calc(var(--width) * 0.025) calc(var(--width) * 0.025) 0 hsl(210 10% 10% / 0.65) inset;
+        	border-radius: 100vh;
+        }
+
+        .toggle__content {
+          position: absolute;
+          top: 0;
+          left: 0;
+          right: 0;
+          bottom: 0;
+          overflow: hidden;
+          border-radius: 100vh;
+          display: block;
+          -webkit-clip-path: inset( 0 0 0 0 round 100vh);
+                  clip-path: inset( 0 0 0 0 round 100vh);
+          container-type: inline-size;
+        }
+
+        .toggle__backdrop {
+          overflow: visible !important;
+        	position: absolute;
+        	bottom: 0;
+        	width: 100%;
+        	left: 0;
+        	transition: translate var(--speed) var(--easing);
+        	translate: 0 calc(
+        		var(--dark, 0) * (100% - (3 / 8 * var(--width)))
+        	);
+        }
+
+        [aria-pressed=false] .toggle__backdrop:last-of-type {
+        	transition-timing-function: cubic-bezier(.2,-0.6,.7,1.6);
+        }
+        [aria-pressed=false] .stars path {
+        	transition-delay: 0s;
+        }
+
+        .stars path {
+        	transform-box: fill-box;
+        	transform-origin: 25% 50%;
+        	scale: calc(0.25 + (var(--dark, 0) * 0.75));
+        	transition: scale var(--speed) calc(var(--speed) * 0.5) var(--easing);
+        }
+
+        .toggle__indicator {
+        	height: 100%;
+        	aspect-ratio: 1;
+        	border-radius: 0%;
+        	display: grid;
+        	place-items: center;
+        	padding: 3%;
+          transition: translate var(--speed) var(--slide-ease);
+          translate: calc(var(--dark, 0) * (100cqi - 100%)) 0;
+        }
+
+
+        .toggle__star {
+        	height: 100%;
+        	aspect-ratio: 1;
+        	border-radius: 50%;
+        	position: relative;
+        	transition: translate var(--speed) var(--easing);
+        	translate: calc((var(--dark, 0) * -10%) + 5%) 0;
+        }
+
+        .sun {
+        	background: var(--sun);
+        	position: absolute;
+        	inset: 0;
+        	border-radius: 50%;
+        	overflow: hidden;
+        	box-shadow:
+        		calc(var(--width) * 0.01) calc(var(--width) * 0.01) calc(var(--width) * 0.02) 0 hsl(210 10% 100% / 0.95) inset,
+        		calc(var(--width) * -0.1) calc(var(--width) * -0.01) calc(var(--width) * 0.02) 0 hsl(210 10% 20% / 0.5) inset;
+        }
+        .moon {
+        	position: absolute;
+        	inset: -1%;
+        	border-radius: 50%;
+        	background: var(--moon);
+          transition: translate var(--speed) ease-in-out;
+        	translate: calc((100 - (var(--dark, 0) * 100)) * 1%) 0%;
+        	box-shadow:
+        		calc(var(--width) * 0.01) calc(var(--width) * 0.01) calc(var(--width) * 0.02) 0 hsl(210 10% 100% / 0.95) inset,
+        		calc(var(--width) * -0.1) calc(var(--width) * -0.01) calc(var(--width) * 0.02) 0 hsl(210 10% 10% / 0.95) inset;
+        }
+
+        .moon__crater {
+        	position: absolute;
+        	background: var(--crater);
+        	border-radius: 50%;
+        	width: calc(var(--size, 10) * 1%);
+        	aspect-ratio: 1;
+        	left: calc(var(--x) * 1%);
+        	top: calc(var(--y) * 1%);
+        	box-shadow:
+        		calc(var(--width) * 0.01) calc(var(--width) * 0.01) calc(var(--width) * 0.01) 0 hsl(210 10% 6% / 0.25) inset,
+        		0 calc(var(--width) * 0.005) calc(var(--width) * 0.01) 0 hsl(210 10% 100% / 0.25);
+        }
+
+        .moon__crater:nth-of-type(1) { --size: 18; --x: 40; --y: 15; }
+        .moon__crater:nth-of-type(2) { --size: 20; --x: 65; --y: 58; }
+        .moon__crater:nth-of-type(3) { --size: 34; --x: 18; --y: 40; }
+
+        .toggle__star:before {
+        	content: "";
+        	z-index: -1;
+        	width: 356%;
+        	background:
+        		radial-gradient(hsl(0 0% 100% / 0.25) 40%, transparent 40.5%),
+        		radial-gradient(hsl(0 0% 100% / 0.25) 56%, transparent 56.5%)
+        	  hsl(0 0% 100% / 0.25);
+        	border-radius: 50%;
+        	aspect-ratio: 1;
+        	position: absolute;
+        	top: 50%;
+        	left: 50%;
+        	transition: translate var(--speed) var(--easing);
+        	translate: calc( (50 - (var(--dark, 0) * 4)) * -1% ) -50%;
+        }
+
+        .toggle__star:after {
+        	content: "";
+        	position: absolute;
+        	inset: 0;
+        	display: block;
+        	background: hsl(0 0% 0% / 0.5);
+        	filter: blur(4px);
+        	translate: 2% 4%;
+        	border-radius: 50%;
+        	z-index: -1;
+        }
+
+        .toggle__indicator-wrapper { position: absolute; inset: 0; }
+        .stars g { transform-box: fill-box; transform-origin: 50% 50%; }
+        .stars g:nth-of-type(3) { animation: twinkle 4s -2s infinite; }
+        .stars g:nth-of-type(11) { animation: twinkle 6s -2s infinite; }
+        .stars g:nth-of-type(9) { animation: twinkle 4s -1s infinite; }
+
+        @keyframes twinkle {
+        	0%, 40%, 60%, 100% { transform: scale(1); }
+        	50% { transform: scale(0); }
+        }
+
+        .astrobear__container {
+        	position: absolute;
+        	overflow: hidden;
+        	inset: 0;
+        	clip-path: inset(0 0 0 0);
+        	opacity: var(--dark, 0);
+        	translate: 0 calc(-200% + (var(--dark, 0) * 200%));
+        	transition: opacity var(--speed) var(--easing), translate var(--speed) var(--easing);
+        }
+
+        .astrobear {
+        	width: 28%;
+        	position: absolute;
+        	top: 120%;
+        	left: -30%;
+        	transition: translate
+        		calc(var(--speed) + (var(--dark, 0) * (var(--bear-speed) * 0.7)))
+        		calc(var(--bear-speed) * (0.2 * var(--dark, 0))) linear;
+        	translate: calc(var(--dark, 0) * 220%) calc(var(--dark, 0) * -280%);
+        }
+
+        .astrobear img {
+            display: block;
+            width: 100%;
+            height: auto;
+        	transform-origin: 50% 50%;
+        	scale: var(--dark, 0);
+        	transition: scale var(--speed) calc(var(--speed) * 0.25) ease-in-out;
+        }
+
+        .pilot__container {
+        	position: absolute;
+        	overflow: hidden;
+        	inset: 0;
+        	clip-path: inset(0 0 0 0);
+        	opacity: calc(1 - var(--dark, 0));
+        	translate: 0 calc(var(--dark, 0) * 200%);
+        	transition: opacity var(--speed) var(--easing), translate var(--speed) var(--easing);
+        }
+
+        .pilot-bear {
+            width: 30%;
+            position: absolute;
+            top: 30%;
+            left: 120%;
+            opacity: calc(1 - var(--dark, 0));
+            transition:
+                translate calc(var(--speed) + ((1 - var(--dark, 0)) * (var(--bear-speed) - var(--speed))))
+                          calc(var(--bear-speed) * 0.25 * (1 - var(--dark, 0))) linear,
+                opacity var(--speed) var(--easing);
+            translate: calc((1 - var(--dark, 0)) * -500%)
+                       calc((1 - var(--dark, 0)) * -50%);
+        }
+
+
+        .pilot-bear img {
+            display: block;
+            width: auto;
+            height: auto;
+        	transform-origin: 50% 50%;
+        }
+
+        /* End of CSS from new style.css */
+
+
+        /* Your existing styles */
+        @font-face {
+            font-family: "Melon Camp";
+            src: url("https://www.freefontdownload.org/fonts-file/melon-camp.ttf") format("truetype");
+            font-display: swap;
+        }
+
+        body {
+            overflow-x: hidden;
+            overflow-y: auto;
+            transition: color 1500ms ease-in-out, background-color var(--speed) var(--easing);
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        html, body {
+            overflow-x: hidden !important;
+            width: 100%;
+            max-width: 100vw;
+        }
+
+        ::-webkit-scrollbar {
+            display: none; /* Menyembunyikan scrollbar */
+        }
+
+        .character-bg {
+            position: fixed;
+            inset: 0;
+            z-index: -10;
+            background-size: contain;
+            background-position: center;
+            transition: opacity 1000ms ease-in-out;
+            transform: none !important; /* Mencegah transformasi yang tidak diinginkan */
+            scale: none !important; /* Mencegah scaling yang tidak diinginkan */
+        }
+
+        #main-content {
+            max-width: 100vw;
+            overflow: hidden;
+        }
+
+        /* Reset transformasi dan scaling yang tidak perlu */
+        .pilot-bear,
+        .astrobear {
+            transform: none !important;
+            scale: none !important;
+        }
+
+        .sparkle {
+            position: absolute; width: 2px; height: 2px;
+            background-color: white; border-radius: 50%;
+            animation: sparkle-anim 1.5s infinite; opacity: 0;
+            will-change: transform, opacity;
+        }
+
+        @keyframes sparkle-anim {
+            0% { transform: scale(0.5) translateY(0); opacity: 0; }
+            50% { opacity: 1; }
+            100% { transform: scale(1.2) translateY(-15px); opacity: 0; }
+        }
+
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: rgba(10, 15, 24, 0.5); }
+        ::-webkit-scrollbar-thumb { background: #3b82f6; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #2563eb; }
+
+        .background-layers-container {
+            position: fixed; inset: 0; z-index: -20; opacity: 0;
+            transition: opacity 1500ms ease-in-out; will-change: opacity;
+        }
+        .day-mode-gradient-bg { position: absolute; inset: 0; background: linear-gradient(to bottom, #000005 0%, #050015 30%, #100030 60%, #150040 100%); z-index: 1; }
+        .day-mode-central-glow { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 900px; height: 900px; border-radius: 50%; background: radial-gradient(circle at center, rgba(0, 0, 255, 0.03) 0%, rgba(0, 0, 255, 0) 70%); z-index: 2; }
+        .day-mode-central-pattern-svg { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 700px; height: 700px; opacity: 0.08; z-index: 3; filter: drop-shadow(0 0 5px rgba(0, 0, 255, 0.1)); }
+        .night-mode-gradient-bg { position: absolute; inset: 0; background: linear-gradient(to bottom, #000000 0%, #080000 30%, #100000 60%, #150000 100%); z-index: 1; }
+        .night-mode-central-glow { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 900px; height: 900px; border-radius: 50%; background: radial-gradient(circle at center, rgba(255, 0, 0, 0.03) 0%, rgba(255, 0, 0, 0) 70%); z-index: 2; }
+        .night-mode-central-pattern-svg { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 700px; height: 700px; opacity: 0.08; z-index: 3; filter: drop-shadow(0 0 5px rgba(255, 0, 0, 0.1)); }
+
+        .character-bg {
+            position: fixed; inset: 0; z-index: -10;
+            background-size: 50% auto; background-repeat: no-repeat;
+            background-position: calc(50% + 200px) calc(50% - 150px);
+            opacity: 0; transition: opacity 1000ms ease-in-out; will-change: opacity;
+        }
+
+        @media (min-width: 1024px) {
+            .character-bg { background-position: left 55% top 40%; background-size: auto 70%; }
+             #bgPhoebe.character-bg, #bgChisa.character-bg { background-position: left 450px top -120px; background-size: 50% auto; }
+        }
+         @media (max-width: 767px) {
+            .character-bg { background-size: 80% auto; background-position: center center; }
+        }
+
+        #namaHadi { transition: text-shadow 1500ms ease-in-out; will-change: text-shadow; }
+        #namaHadi span { display: inline-block; } /* Needed for Anime.js to target individual characters */
+        #deskripsiHadi {
+            will-change: opacity;
+            line-height: 1.6;
+            /* min-height: 10em;  Consider a min-height to prevent collapsing during text removal */
+        }
+        #deskripsiHadi span {
+            display: inline-block;
+            position: relative;
+            will-change: transform, opacity, color; /* Removed filter from default */
+        }
+
+        @media (min-width: 768px) {
+            .day-mode-central-pattern-svg, .night-mode-central-pattern-svg { width: 900px; height: 900px; }
+            .day-mode-central-glow, .night-mode-central-glow { width: 1200px; height: 1200px; }
+        }
+    </style>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        'sans': ['Titillium Web', 'sans-serif'],
+                        'display': ['Kingvoon', 'sans-serif'],
+                        'description': ['Melon Camp', 'sans-serif'],
+                    },
+                    colors: {
+                        'brand-primary': '#3b82f6', 'brand-secondary': '#14b8a6',
+                        'ui-dark': '#0a0f18', 'ui-panel': 'rgba(17, 24, 39, 0.8)',
+                        'ui-border': 'rgba(55, 65, 81, 0.5)', 'text-light': '#e5e7eb',
+                        'text-dim': '#9ca3af',
+                        'text-body-lightmode': '#1f2937',
+                        'text-desc-lightmode': '#4b5563',
+                        'text-button-inactive-lightmode': '#6b7280',
+                        'fire-yellow': '#FFD700',
+                        'fire-orange': '#FFA500',
+                        'fire-red': '#FF4500',
+                        'fire-ash': '#202020',
+                        'water-clear': '#ADD8E6',
+                        'water-deep': '#87CEFA',
+                    },
+                    textShadow: {
+                        'glow-sm': '0 0 8px rgba(59, 130, 246, 0.5)', 'glow-md': '0 0 12px rgba(59, 130, 246, 0.6)',
+                        'glow-red-sm': '0 0 8px rgba(239, 68, 68, 0.5)', 'glow-red-md': '0 0 12px rgba(239, 68, 68, 0.7)',
+                    },
+                    keyframes: {
+                       fadeInSlideUp: { '0%': { opacity: '0', transform: 'translateY(20px)' }, '100%': { opacity: '1', transform: 'translateY(0px)' }, },
+                       float: { '0%, 100%': { transform: 'translateY(0px)' }, '50%': { transform: 'translateY(-8px)' } }
+                    },
+                    animation: {
+                       'fade-in-slide-up': 'fadeInSlideUp 0.7s ease-out forwards',
+                       'float-subtle': 'float 6s ease-in-out infinite'
+                    }
+                },
+            },
+            plugins: [
+                function({ addUtilities, theme }) {
+                    const newUtilities = {}
+                    Object.entries(theme('textShadow')).forEach(([key, value]) => {
+                        newUtilities[`.text-shadow-${key}`] = { textShadow: value }
+                    })
+                    addUtilities(newUtilities, ['responsive', 'hover'])
+                }
+            ],
+        }
+    </script>
+</head>
+<body class="font-sans text-text-body-lightmode dark:text-text-light min-h-screen w-screen">
+
+    <!-- Day Mode Background Elements -->
+    <div id="day-mode-background-layers" class="background-layers-container">
+        <div class="day-mode-gradient-bg"></div>
+        <div class="day-mode-central-glow"></div>
+        <svg class="day-mode-central-pattern-svg" viewBox="0 0 100 100">
+            <!-- SVG pattern day -->
+            <circle cx="50" cy="50" r="49" fill="none" stroke="blue" stroke-width="0.05" stroke-opacity="0.02"/><circle cx="50" cy="50" r="45" fill="none" stroke="blue" stroke-width="0.05" stroke-opacity="0.03"/><circle cx="50" cy="50" r="40" fill="none" stroke="blue" stroke-width="0.05" stroke-opacity="0.04"/><circle cx="50" cy="50" r="35" fill="none" stroke="blue" stroke-width="0.05" stroke-opacity="0.05"/><circle cx="50" cy="50" r="30" fill="none" stroke="blue" stroke-width="0.05" stroke-opacity="0.06"/><circle cx="50" cy="50" r="25" fill="none" stroke="blue" stroke-width="0.05" stroke-opacity="0.07"/><circle cx="50" cy="50" r="20" fill="none" stroke="blue" stroke-width="0.05" stroke-opacity="0.08"/>
+            <line x1="50" y1="50" x2="50" y2="1" stroke="blue" stroke-width="0.08" stroke-opacity="0.08"/><line x1="50" y1="50" x2="99" y2="50" stroke="blue" stroke-width="0.08" stroke-opacity="0.08"/><line x1="50" y1="50" x2="1" y2="50" stroke="blue" stroke-width="0.08" stroke-opacity="0.08"/><line x1="50" y1="50" x2="50" y2="99" stroke="blue" stroke-width="0.08" stroke-opacity="0.08"/><line x1="50" y1="50" x2="85.3" y2="14.7" stroke="blue" stroke-width="0.08" stroke-opacity="0.08" transform="rotate(45 50 50)"/><line x1="50" y1="50" x2="85.3" y2="14.7" stroke="blue" stroke-width="0.08" stroke-opacity="0.08" transform="rotate(135 50 50)"/><line x1="50" y1="50" x2="85.3" y2="14.7" stroke="blue" stroke-width="0.08" stroke-opacity="0.08" transform="rotate(225 50 50)"/><line x1="50" y1="50" x2="85.3" y2="14.7" stroke="blue" stroke-width="0.08" stroke-opacity="0.08" transform="rotate(315 50 50)"/>
+        </svg>
+    </div>
+
+    <!-- Night Mode Background Elements -->
+    <div id="night-mode-background-layers" class="background-layers-container">
+        <div class="night-mode-gradient-bg"></div>
+        <div class="night-mode-central-glow"></div>
+        <svg class="night-mode-central-pattern-svg" viewBox="0 0 100 100">
+            <!-- SVG pattern night -->
+             <circle cx="50" cy="50" r="49" fill="none" stroke="red" stroke-width="0.05" stroke-opacity="0.02"/><circle cx="50" cy="50" r="45" fill="none" stroke="red" stroke-width="0.05" stroke-opacity="0.03"/><circle cx="50" cy="50" r="40" fill="none" stroke="red" stroke-width="0.05" stroke-opacity="0.04"/><circle cx="50" cy="50" r="35" fill="none" stroke="red" stroke-width="0.05" stroke-opacity="0.05"/><circle cx="50" cy="50" r="30" fill="none" stroke="red" stroke-width="0.05" stroke-opacity="0.06"/><circle cx="50" cy="50" r="25" fill="none" stroke="red" stroke-width="0.05" stroke-opacity="0.07"/><circle cx="50" cy="50" r="20" fill="none" stroke="red" stroke-width="0.05" stroke-opacity="0.08"/>
+            <line x1="50" y1="50" x2="50" y2="1" stroke="red" stroke-width="0.08" stroke-opacity="0.08"/><line x1="50" y1="50" x2="99" y2="50" stroke="red" stroke-width="0.08" stroke-opacity="0.08"/><line x1="50" y1="50" x2="1" y2="50" stroke="red" stroke-width="0.08" stroke-opacity="0.08"/><line x1="50" y1="50" x2="50" y2="99" stroke="red" stroke-width="0.08" stroke-opacity="0.08"/><line x1="50" y1="50" x2="85.3" y2="14.7" stroke="red" stroke-width="0.08" stroke-opacity="0.08" transform="rotate(45 50 50)"/><line x1="50" y1="50" x2="85.3" y2="14.7" stroke="red" stroke-width="0.08" stroke-opacity="0.08" transform="rotate(135 50 50)"/><line x1="50" y1="50" x2="85.3" y2="14.7" stroke="red" stroke-width="0.08" stroke-opacity="0.08" transform="rotate(225 50 50)"/><line x1="50" y1="50" x2="85.3" y2="14.7" stroke="red" stroke-width="0.08" stroke-opacity="0.08" transform="rotate(315 50 50)"/>
+        </svg>
+    </div>
+
+    <!-- Background Image Layers (Character Images) -->
+    <div id="bgPhoebe" class="character-bg"></div>
+    <div id="bgChisa" class="character-bg"></div>
+
+    <div class="fixed inset-0 z-[-5] bg-gradient-to-r from-black/70 via-black/40 to-transparent md:from-black/60 md:via-black/20"></div>
+
+    <div class="relative z-10 min-h-screen w-full flex flex-col items-start justify-center p-6 sm:p-10 md:pl-16 lg:pl-24 xl:pl-32">
+
+        <div id="sparkle-container" class="absolute inset-0 pointer-events-none z-0"></div>
+
+        <!-- New Toggle Button Area -->
+        <div class="toggle-container">
+            <button class="toggle" aria-pressed="false" title="Toggle Dark Mode">
+              <span class="toggle__content">
+                <svg aria-hidden=true class="toggle__backdrop" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 290 228">
+                  <g class="clouds">
+                    <path fill="#D9D9D9" d="M335 147.5c0 27.89-22.61 50.5-50.5 50.5a50.78 50.78 0 0 1-9.29-.853c-2.478 12.606-10.595 23.188-21.615 29.011C245.699 243.749 228.03 256 207.5 256a50.433 50.433 0 0 1-16.034-2.599A41.811 41.811 0 0 1 166 262a41.798 41.798 0 0 1-22.893-6.782A42.21 42.21 0 0 1 135 256a41.82 41.82 0 0 1-19.115-4.592A41.84 41.84 0 0 1 88 262c-1.827 0-3.626-.117-5.391-.343C74.911 270.448 63.604 276 51 276c-23.196 0-42-18.804-42-42s18.804-42 42-42c1.827 0 3.626.117 5.391.343C64.089 183.552 75.396 178 88 178a41.819 41.819 0 0 1 19.115 4.592C114.532 176.002 124.298 172 135 172a41.798 41.798 0 0 1 22.893 6.782 42.066 42.066 0 0 1 7.239-.773C174.137 164.159 189.749 155 207.5 155c.601 0 1.199.01 1.794.031A41.813 41.813 0 0 1 234 147h.002c.269-27.66 22.774-50 50.498-50 27.89 0 50.5 22.61 50.5 50.5Z" />
+                  </g>
+                </svg>
+                <span aria-hidden=true class="pilot__container">
+                  <span class="pilot-bear">
+                     <img src="https://files.catbox.moe/6g1558.png" alt="Character flying during the day">
+                  </span>
+                </span>
+                <svg aria-hidden=true class="toggle__backdrop" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 290 228">
+                  <g class="clouds">
+                    <path fill="#fff" d="M328 167.5c0 15.214-7.994 28.56-20.01 36.068.007.31.01.621.01.932 0 23.472-19.028 42.5-42.5 42.5-3.789 0-7.461-.496-10.957-1.426C249.671 263.676 233.141 277 213.5 277a42.77 42.77 0 0 1-7.702-.696C198.089 284.141 187.362 289 175.5 289a42.338 42.338 0 0 1-27.864-10.408A42.411 42.411 0 0 1 133.5 281c-4.36 0-8.566-.656-12.526-1.876C113.252 287.066 102.452 292 90.5 292a42.388 42.388 0 0 1-15.8-3.034A42.316 42.316 0 0 1 48.5 298C25.028 298 6 278.972 6 255.5S25.028 213 48.5 213a42.388 42.388 0 0 1 15.8 3.034A42.316 42.316 0 0 1 90.5 207c4.36 0 8.566.656 12.526 1.876C110.748 200.934 121.548 196 133.5 196a42.338 42.338 0 0 1 27.864 10.408A42.411 42.411 0 0 1 175.5 204c2.63 0 5.204.239 7.702.696C190.911 196.859 201.638 192 213.5 192c3.789 0 7.461.496 10.957 1.426 2.824-10.491 9.562-19.377 18.553-24.994-.007-.31-.01-.621-.01-.932 0-23.472 19.028-42.5 42.5-42.5s42.5 19.028 42.5 42.5Z" />
+                  </g>
+                </svg>
+                <span class="toggle__indicator-wrapper">
+                  <span class="toggle__indicator">
+                    <span class="toggle__star">
+                      <span class="sun">
+                        <span class="moon">
+                          <span class="moon__crater"></span>
+                          <span class="moon__crater"></span>
+                          <span class="moon__crater"></span>
+                        </span>
+                      </span>
+                    </span>
+                  </span>
+                </span>
+                <svg aria-hidden=true class="toggle__backdrop" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 290 228">
+                  <g>
+                    <g class="stars">
+                      <g><path fill="#fff" fill-rule="evenodd" d="M61 11.5a.75.75 0 0 1 .721.544l.813 2.846a3.75 3.75 0 0 0 2.576 2.576l2.846.813a.75.75 0 0 1 0 1.442l-2.846.813a3.749 3.749 0 0 0-2.576 2.576l-.813 2.846a.75.75 0 0 1-1.442 0l-.813-2.846a3.749 3.749 0 0 0-2.576-2.576l-2.846-.813a.75.75 0 0 1 0-1.442l2.846-.813a3.749 3.749 0 0 0 2.576-2.576l.813-2.846A.75.75 0 0 1 61 11.5Z" clip-rule="evenodd" /></g>
+                      <g><path fill="#fff" fill-rule="evenodd" d="M62.5 45.219a.329.329 0 0 1 .315.238l.356 1.245a1.641 1.641 0 0 0 1.127 1.127l1.245.356a.328.328 0 0 1 0 .63l-1.245.356a1.641 1.641 0 0 0-1.127 1.127l-.356 1.245a.328.328 0 0 1-.63 0l-.356-1.245a1.641 1.641 0 0 0-1.127-1.127l-1.245-.356a.328.328 0 0 1 0-.63l1.245-.356a1.641 1.641 0 0 0 1.127-1.127l.356-1.245a.328.328 0 0 1 .315-.238Z" clip-rule="evenodd" /></g>
+                      <g><path fill="#fff" fill-rule="evenodd" d="M32 31.188a.28.28 0 0 1 .27.204l.305 1.067a1.405 1.405 0 0 0 .966.966l1.068.305a.28.28 0 0 1 0 .54l-1.068.305a1.405 1.405 0 0 0-.966.966l-.305 1.068a.28.28 0 0 1-.54 0l-.305-1.068a1.406 1.406 0 0 0-.966-.966l-1.067-.305a.28.28 0 0 1 0-.54l1.067-.305a1.406 1.406 0 0 0 .966-.966l.305-1.068a.281.281 0 0 1 .27-.203Z" clip-rule="evenodd" /></g>
+                      <g><path fill="#fff" fill-rule="evenodd" d="M41.5 74.219a.329.329 0 0 1 .315.238l.356 1.245a1.641 1.641 0 0 0 1.127 1.127l1.245.356a.328.328 0 0 1 0 .63l-1.245.356a1.641 1.641 0 0 0-1.127 1.127l-.356 1.245a.328.328 0 0 1-.63 0l-.356-1.245a1.641 1.641 0 0 0-1.127-1.127l-1.245-.356a.328.328 0 0 1 0-.63l1.245-.356a1.641 1.641 0 0 0 1.127-1.127l.356-1.245a.328.328 0 0 1 .315-.238Z" clip-rule="evenodd" /></g>
+                      <g><path fill="#fff" fill-rule="evenodd" d="M34 83.188a.28.28 0 0 1 .27.203l.305 1.068a1.405 1.405 0 0 0 .966.966l1.068.305a.28.28 0 0 1 0 .54l-1.068.305a1.405 1.405 0 0 0-.966.966l-.305 1.068a.28.28 0 0 1-.54 0l-.305-1.068a1.406 1.406 0 0 0-.966-.966l-1.068-.305a.28.28 0 0 1 0-.54l1.068-.305a1.406 1.406 0 0 0 .966-.966l.305-1.068a.281.281 0 0 1 .27-.204Z" clip-rule="evenodd" /></g>
+                      <g><path fill="#fff" fill-rule="evenodd" d="M63 89.25a.375.375 0 0 1 .36.272l.407 1.423a1.874 1.874 0 0 0 1.288 1.288l1.423.406a.374.374 0 0 1 0 .722l-1.423.406a1.874 1.874 0 0 0-1.288 1.288l-.407 1.423a.374.374 0 0 1-.72 0l-.407-1.423a1.874 1.874 0 0 0-1.288-1.288l-1.423-.406a.374.374 0 0 1 0-.722l1.423-.406a1.874 1.874 0 0 0 1.288-1.288l.407-1.423a.376.376 0 0 1 .36-.272Z" clip-rule="evenodd" /></g>
+                      <g><path fill="#fff" fill-rule="evenodd" d="M110.5 53.156a.236.236 0 0 1 .225.17l.254.89a1.174 1.174 0 0 0 .805.805l.89.254a.23.23 0 0 1 .122.084.233.233 0 0 1-.122.366l-.89.254a1.167 1.167 0 0 0-.805.805l-.254.89a.232.232 0 0 1-.225.17.235.235 0 0 1-.225-.17l-.254-.89a1.174 1.174 0 0 0-.805-.805l-.89-.254a.23.23 0 0 1-.122-.084.233.233 0 0 1 .122-.366l.89-.254a1.167 1.167 0 0 0 .805-.805l.254-.89a.232.232 0 0 1 .225-.17Z" clip-rule="evenodd" /></g>
+                      <g><path fill="#fff" fill-rule="evenodd" d="M120 27.188a.279.279 0 0 1 .27.204l.305 1.067a1.41 1.41 0 0 0 .966.966l1.067.305a.283.283 0 0 1 .148.1.286.286 0 0 1 0 .34.283.283 0 0 1-.148.1l-1.067.305a1.403 1.403 0 0 0-.966.966l-.305 1.067a.279.279 0 0 1-.439.147.275.275 0 0 1-.101-.147l-.305-1.067a1.41 1.41 0 0 0-.966-.966l-1.068-.305a.284.284 0 0 1-.147-.1.286.286 0 0 1 0-.34.284.284 0 0 1 .147-.1l1.068-.305a1.405 1.405 0 0 0 .966-.966l.305-1.067a.279.279 0 0 1 .27-.204Z" clip-rule="evenodd" /></g>
+                      <g><path fill="#fff" fill-rule="evenodd" d="M155 28.5a.753.753 0 0 1 .721.544l.813 2.846a3.746 3.746 0 0 0 2.576 2.576l2.846.813a.747.747 0 0 1 .543.721.75.75 0 0 1-.543.721l-2.846.813a3.75 3.75 0 0 0-2.576 2.576l-.813 2.846a.747.747 0 0 1-.721.543.749.749 0 0 1-.721-.543l-.813-2.846a3.746 3.746 0 0 0-2.576-2.576l-2.846-.813a.747.747 0 0 1-.543-.721.75.75 0 0 1 .543-.721l2.846-.813a3.75 3.75 0 0 0 2.576-2.576l.813-2.846A.751.751 0 0 1 155 28.5Z" clip-rule="evenodd" /></g>
+                      <g><path fill="#fff" fill-rule="evenodd" d="M147 60.25a.377.377 0 0 1 .36.272l.407 1.423a1.883 1.883 0 0 0 1.288 1.288l1.423.407a.375.375 0 0 1 0 .72l-1.423.407a1.875 1.875 0 0 0-1.288 1.288l-.407 1.423a.371.371 0 0 1-.36.272.377.377 0 0 1-.36-.272l-.407-1.423a1.883 1.883 0 0 0-1.288-1.288l-1.423-.406a.375.375 0 0 1 0-.722l1.423-.406a1.875 1.875 0 0 0 1.288-1.288l.407-1.423a.372.372 0 0 1 .36-.272Z" clip-rule="evenodd" /></g>
+                      <g><path fill="#fff" fill-rule="evenodd" d="M125.5 76.344a.513.513 0 0 1 .496.374l.559 1.956a2.574 2.574 0 0 0 1.771 1.771l1.956.56a.514.514 0 0 1 .27.805.514.514 0 0 1-.27.186l-1.956.559a2.57 2.57 0 0 0-1.771 1.77l-.559 1.957a.514.514 0 0 1-.806.27.514.514 0 0 1-.186-.27l-.559-1.956a2.574 2.574 0 0 0-1.771-1.771l-1.956-.56a.514.514 0 0 1-.27-.805.514.514 0 0 1 .27-.186l1.956-.559a2.57 2.57 0 0 0 1.771-1.77l.559-1.957a.515.515 0 0 1 .496-.374Z" clip-rule="evenodd" /></g>
+                    </g>
+                  </g>
+                </svg>
+                <span class="astrobear__container">
+                  <span class="astrobear">
+                     <img src="https://files.catbox.moe/57tcjc.png" alt="Sleeping character counting sheep">
+                  </span>
+                </span>
+              </span>
+            </button>
+        </div>
+
+
+        <div id="main-content" class="max-w-xs sm:max-w-sm md:max-w-md opacity-0" style="animation-delay: 500ms;">
+            <h1 id="namaHadi" class="font-display text-6xl sm:text-7xl lg:text-8xl xl:text-9xl text-white mb-4 sm:mb-6 tracking-tighter animate-fade-in-slide-up" style="animation-delay: 700ms; text-align: right; margin-right: 1rem;">
+                <!-- Initial name will be set by JS -->
+            </h1>
+            <p id="deskripsiHadi" class="font-description text-base sm:text-lg lg:text-xl text-text-desc-lightmode dark:text-text-dim leading-relaxed mb-8 animate-fade-in-slide-up" style="animation-delay: 900ms; max-width: 22ch;">
+                <!-- Initial description will be set by JS -->
+            </p>
+        </div>
+    </div>
+
+    <script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const htmlEl = document.documentElement;
+        const dayModeBgLayers = document.getElementById('day-mode-background-layers');
+        const nightModeBgLayers = document.getElementById('night-mode-background-layers');
+        const bgPhoebe = document.getElementById('bgPhoebe');
+        const bgChisa = document.getElementById('bgChisa');
+        const namaHadiEl = document.getElementById('namaHadi');
+        const deskripsiHadiEl = document.getElementById('deskripsiHadi');
+        const mainContentEl = document.getElementById('main-content');
+        const themeToggleButton = document.querySelector("button.toggle");
+
+        const phoebeUrl = 'https://files.catbox.moe/buwb91.jpg';
+        const chisaUrl = 'https://files.catbox.moe/wipbbk.jpg';
+
+        bgPhoebe.style.backgroundImage = `url('${phoebeUrl}')`;
+        bgChisa.style.backgroundImage = `url('${chisaUrl}')`;
+
+        let isNameAnimating = false;
+        let isDescriptionAnimating = false;
+
+        const descriptions = {
+            siang: "Phoebe adalah Resonator Support yang tenang dan rasional dari fraksi CBR, diperkirakan akan menggunakan senjata Pistol. Dia dikenal karena sifatnya yang cermat dan bertanggung jawab, sering bertindak sebagai perencana dalam tim.",
+            malam: "Chisa adalah karakter Broadblade yang sangat dinantikan di Wuthering Waves, dikenal karena desainnya yang unik dan popularitasnya yang tinggi di kalangan penggemar. Dia kemungkinan besar akan menjadi karakter playable yang dirilis di masa depan, dengan beberapa spekulasi mengaitkannya dengan karakter dari game Punishing: Gray Raven sebelumnya."
+        };
+
+        const TWC = tailwind.config.theme.extend.colors;
+        const DAY_DESC_COLOR = TWC['text-desc-lightmode'] || '#4b5563';
+        const NIGHT_DESC_COLOR = TWC['text-dim'] || '#9ca3af';
+        const FIRE_YELLOW = TWC['fire-yellow'] || '#FFD700';
+        const FIRE_ORANGE = TWC['fire-orange'] || '#FFA500';
+        const FIRE_RED = TWC['fire-red'] || '#FF4500';
+        const FIRE_ASH = TWC['fire-ash'] || '#202020';
+        const WATER_CLEAR = TWC['water-clear'] || '#ADD8E6';
+        const WATER_DEEP = TWC['water-deep'] || '#87CEFA';
+
+        function getTranslateYValue(element) {
+            if (!element) return 0;
+            const transform = getComputedStyle(element).transform;
+            if (transform === 'none') return 0;
+            const matrix = transform.match(/matrix.*\((.+)\)/);
+            if (matrix && matrix[1]) {
+                const values = matrix[1].split(',').map(s => parseFloat(s.trim()));
+                return values.length === 6 ? values[5] : (values.length === 16 ? values[13] : 0);
+            }
+            return 0;
+        }
+
+        function getScaleValue(element) {
+             if (!element) return 1;
+            const transform = getComputedStyle(element).transform;
+            if (transform === 'none') return 1;
+            const scaleMatch = transform.match(/scale\(([^,)]+)(?:,\s*([^)]+))?\)/);
+            if (scaleMatch && scaleMatch[1]) return parseFloat(scaleMatch[1]);
+            const matrix = transform.match(/matrix.*\((.+)\)/);
+             if (matrix && matrix[1]) {
+                const values = matrix[1].split(',').map(s => parseFloat(s.trim()));
+                return values.length >= 1 ? Math.sqrt(values[0]*values[0] + (values[1] ? values[1]*values[1] : 0)) : 1;
+            }
+            return 1;
+        }
+
+        function spanifyText(element, defaultOpacity = 1, textContentToSpanify) {
+            const textToUse = textContentToSpanify !== undefined ? textContentToSpanify.trim() : element.textContent.trim();
+            
+            // SELALU bersihkan seluruh innerHTML elemen sebelum membuat span baru.
+            element.innerHTML = ''; 
+
+            if (!textToUse) { 
+                return [];
+            }
+
+            return textToUse.split('').map(char => {
+                const span = document.createElement('span');
+                span.textContent = char === ' ' ? '\u00A0' : char;
+                span.style.display = 'inline-block'; 
+                span.style.opacity = defaultOpacity;
+                if (defaultOpacity === 1) { 
+                    span.style.transform = 'translateY(0px)';
+                }
+                element.appendChild(span);
+                return span;
+            });
+        }
+
+
+        function animateNameChange(element, newText, isDarkMode) {
+            anime.remove(element.querySelectorAll('span'));
+            isNameAnimating = true;
+
+            const oldSpans = Array.from(element.children).filter(child => child.tagName === 'SPAN');
+            const currentTextFromSpans = oldSpans.map(s => s.textContent.replace(/\u00A0/g, ' ')).join('');
+
+            if (currentTextFromSpans === newText && oldSpans.every(s => parseFloat(getComputedStyle(s).opacity) === 1 && getTranslateYValue(s) === 0)) {
+                isNameAnimating = false;
+                return;
+            }
+
+            let outAnimationPromise = Promise.resolve();
+
+            if (oldSpans.length > 0 && currentTextFromSpans !== newText) {
+                outAnimationPromise = anime({
+                    targets: oldSpans,
+                    opacity: [oldSpans[0] ? parseFloat(getComputedStyle(oldSpans[0]).opacity) : 1, 0],
+                    translateY: [oldSpans[0] ? getTranslateYValue(oldSpans[0]) : 0, isDarkMode ? -20 : 20],
+                    duration: 200,
+                    easing: 'easeInQuad',
+                    delay: anime.stagger(20),
+                }).finished;
+            }
+
+            outAnimationPromise.then(() => {
+                const newSpans = spanifyText(element, 0, newText); // Create new spans with opacity 0
+                if (newSpans.length === 0) {
+                    isNameAnimating = false;
+                    return;
+                }
+                newSpans.forEach(span => { // Set initial transform for in-animation
+                    span.style.transform = `translateY(${isDarkMode ? 20 : -20}px)`;
+                });
+
+                anime({ // Animate new spans in
+                    targets: newSpans,
+                    opacity: [0, 1],
+                    translateY: [isDarkMode ? 20 : -20, 0],
+                    duration: 300,
+                    easing: 'easeOutQuad',
+                    delay: anime.stagger(35),
+                    complete: () => {
+                        isNameAnimating = false;
+                    }
+                });
+            }).catch((err) => {
+                // console.error("Name animation promise rejected or error:", err);
+                spanifyText(element, 1, newText); // Fallback: ensure the correct text is visible
+                isNameAnimating = false;
+            });
+        }
+
+        async function animateDescriptionChange(element, newText, isTransitionToDark) {
+            anime.remove(element.querySelectorAll('span'));
+            isDescriptionAnimating = true;
+
+            const oldSpans = Array.from(element.children).filter(child => child.tagName === 'SPAN');
+            let outAnimationPromise = Promise.resolve();
+
+            const initialOldTextColor = oldSpans.length > 0 && oldSpans[0].style.color ? oldSpans[0].style.color : (isTransitionToDark ? DAY_DESC_COLOR : NIGHT_DESC_COLOR);
+            const initialOldOpacity = oldSpans.length > 0 ? parseFloat(getComputedStyle(oldSpans[0]).opacity) : 1;
+            const initialOldTransformY = oldSpans.length > 0 ? getTranslateYValue(oldSpans[0]) : 0;
+            const initialOldScale = oldSpans.length > 0 ? getScaleValue(oldSpans[0]) : 1;
+
+
+            if (oldSpans.length > 0) {
+                if (isTransitionToDark) {
+                    outAnimationPromise = anime({
+                        targets: oldSpans,
+                        color: [initialOldTextColor, FIRE_ORANGE, FIRE_RED, FIRE_ASH],
+                        opacity: [initialOldOpacity, 0],
+                        translateY: [initialOldTransformY, (el, i) => initialOldTransformY - (i % 2 + 1) * 1.5],
+                        scale: [initialOldScale, 0.9],
+                        duration: 450,
+                        easing: 'easeInSine',
+                        delay: anime.stagger(7, { direction: 'normal' })
+                    }).finished;
+                } else {
+                    const BLUE_EMBER_START = WATER_DEEP;
+                    const BLUE_FADE_MID = WATER_CLEAR;
+                    const BLUE_FADE_END = 'rgba(173, 216, 230, 0.2)';
+
+                    outAnimationPromise = anime({
+                        targets: oldSpans,
+                        color: [initialOldTextColor, BLUE_EMBER_START, BLUE_FADE_MID, BLUE_FADE_END],
+                        opacity: [initialOldOpacity, 0],
+                        translateY: [initialOldTransformY, (el, i) => initialOldTransformY - (i % 2 + 1) * 1.5],
+                        scale: [initialOldScale, 0.9],
+                        duration: 450,
+                        easing: 'easeInSine',
+                        delay: anime.stagger(7, { direction: 'normal' })
+                    }).finished;
+                }
+            }
+            
+            try {
+                await outAnimationPromise;
+            } catch (e) {
+                // console.warn("Description out-animation interrupted or failed:", e);
+                element.innerHTML = ''; 
+            }
+
+
+            const newSpans = spanifyText(element, 0, newText); // Create new spans with opacity 0
+
+            if (newSpans.length === 0) {
+                 isDescriptionAnimating = false;
+                 return;
+            }
+
+            let inAnimationPromise;
+            if (isTransitionToDark) {
+                inAnimationPromise = anime({
+                    targets: newSpans,
+                    opacity: [0, 1],
+                    color: [FIRE_ORANGE, NIGHT_DESC_COLOR],
+                    translateY: [anime.random(3, 5), 0],
+                    scale: [0.9, 1],
+                    duration: 400,
+                    easing: 'easeOutQuad',
+                    delay: anime.stagger(8)
+                }).finished;
+            } else {
+                 const BLUE_EMBER_START_IN = WATER_DEEP;
+                 inAnimationPromise = anime({
+                    targets: newSpans,
+                    opacity: [0, 1],
+                    color: [BLUE_EMBER_START_IN, DAY_DESC_COLOR],
+                    translateY: [anime.random(3, 5), 0],
+                    scale: [0.9, 1],
+                    duration: 400,
+                    easing: 'easeOutQuad',
+                    delay: anime.stagger(8)
+                }).finished;
+            }
+            
+            try {
+                await inAnimationPromise;
+            } catch (e) {
+                // console.warn("Description in-animation interrupted or failed:", e);
+                spanifyText(element, 1, newText); // Fallback: ensure new text is visible
+            }
+            isDescriptionAnimating = false;
+        }
+
+
+        function setMode(mode) {
+            const isDarkMode = mode === 'malam';
+            const currentModeIsDark = htmlEl.classList.contains('dark');
+
+            let isTransitioningToDarkFlag = false;
+            if (isDarkMode && !currentModeIsDark) {
+                isTransitioningToDarkFlag = true;
+            } else if (!isDarkMode && currentModeIsDark) {
+                isTransitioningToDarkFlag = false;
+            }
+
+
+            if (isDarkMode) {
+                htmlEl.classList.add('dark');
+                document.body.setAttribute("data-dark-mode", 'true');
+            } else {
+                htmlEl.classList.remove('dark');
+                document.body.setAttribute("data-dark-mode", 'false');
+            }
+
+            const targetName = isDarkMode ? 'Chisa' : 'Phoebe';
+            animateNameChange(namaHadiEl, targetName, isDarkMode);
+
+            const newDescriptionText = isDarkMode ? descriptions.malam : descriptions.siang;
+            animateDescriptionChange(deskripsiHadiEl, newDescriptionText, isTransitioningToDarkFlag);
+
+
+            if (themeToggleButton) {
+                themeToggleButton.setAttribute("aria-pressed", isDarkMode ? 'true' : 'false');
+            }
+
+            nightModeBgLayers.style.opacity = isDarkMode ? '1' : '0';
+            dayModeBgLayers.style.opacity = isDarkMode ? '0' : '1';
+            bgChisa.style.opacity = isDarkMode ? '1' : '0';
+            bgPhoebe.style.opacity = isDarkMode ? '0' : '1';
+
+            if (isDarkMode) {
+                namaHadiEl.classList.remove('text-shadow-glow-md');
+                namaHadiEl.classList.add('text-shadow-glow-red-md');
+                deskripsiHadiEl.classList.remove('text-text-desc-lightmode');
+                deskripsiHadiEl.classList.add('dark:text-text-dim');
+            } else {
+                namaHadiEl.classList.remove('text-shadow-glow-red-md');
+                namaHadiEl.classList.add('text-shadow-glow-md');
+                deskripsiHadiEl.classList.add('text-text-desc-lightmode');
+                deskripsiHadiEl.classList.remove('dark:text-text-dim');
+            }
+
+            try {
+                localStorage.setItem('hadiProfileTheme', mode);
+            } catch (e) {
+                console.warn("Could not save theme to localStorage:", e);
+            }
+        }
+
+        const sparkleContainer = document.getElementById('sparkle-container');
+        function createSparkles() {
+            if (!sparkleContainer) return;
+            const numSparkles = 25;
+            const fragment = document.createDocumentFragment();
+            for (let i = 0; i < numSparkles; i++) {
+                const sparkle = document.createElement('div');
+                sparkle.className = 'sparkle';
+                sparkle.style.left = `${Math.random() * 100}%`;
+                sparkle.style.top = `${Math.random() * 100}%`;
+                const randomScale = 0.5 + Math.random() * 0.7;
+                sparkle.style.transform = `scale(${randomScale})`;
+                sparkle.style.animationDuration = `${1.2 + Math.random() * 1.3}s`;
+                sparkle.style.animationDelay = `${Math.random() * 2.5}s`;
+                fragment.appendChild(sparkle);
+            }
+            sparkleContainer.appendChild(fragment);
+        }
+
+        if (themeToggleButton) {
+            const TOGGLE_THEME_HANDLER = () => {
+                const isCurrentlyPressed = themeToggleButton.matches("[aria-pressed=true]");
+                setMode(isCurrentlyPressed ? 'siang' : 'malam');
+            };
+            themeToggleButton.addEventListener("click", TOGGLE_THEME_HANDLER);
+        }
+
+        let savedTheme = 'malam';
+        try {
+            savedTheme = localStorage.getItem('hadiProfileTheme') || 'malam';
+        } catch (e) {
+            console.warn("Could not retrieve theme from localStorage:", e);
+        }
+
+        const initialName = savedTheme === 'malam' ? 'Chisa' : 'Phoebe';
+        const initialDescription = savedTheme === 'malam' ? descriptions.malam : descriptions.siang;
+
+        // Initial DOM setup with correct text and full opacity
+        namaHadiEl.textContent = initialName; 
+        spanifyText(namaHadiEl, 1);         
+
+        deskripsiHadiEl.textContent = initialDescription; 
+        spanifyText(deskripsiHadiEl, 1);                  
+
+
+        setMode(savedTheme); 
+        createSparkles();
+
+        setTimeout(() => {
+            if (mainContentEl) {
+                 mainContentEl.classList.add('opacity-100');
+            }
+        }, parseFloat(getComputedStyle(mainContentEl).animationDelay || "0s") * 1000 + parseFloat(getComputedStyle(mainContentEl).animationDuration || "0s") * 1000 + 100);
+
+    });
+    </script>
+</body>
+</html>
